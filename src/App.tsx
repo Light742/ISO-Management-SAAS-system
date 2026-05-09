@@ -14,6 +14,7 @@ import { SIRFormPage } from './pages/SIRFormPage';
 import { OAFDirectoryPage } from './pages/OAFDirectoryPage';
 import { EventManagementPage } from './pages/EventManagementPage';
 import { ArchiveDetailPage } from './pages/ArchiveDetailPage';
+import { OTPPage } from './pages/OTPPage';
 
 import type { UserRole } from './lib/types';
 
@@ -123,6 +124,12 @@ function App() {
           <Route path="/department/:departmentName" element={
             <ProtectedRoute allowedRoles={['Auditee']}>
               <DepartmentPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/department/:departmentName/otp" element={
+            <ProtectedRoute allowedRoles={['Auditor', 'LeadAuditor', 'QMSAdmin', 'Auditee']}>
+              <OTPPage />
             </ProtectedRoute>
           } />
 

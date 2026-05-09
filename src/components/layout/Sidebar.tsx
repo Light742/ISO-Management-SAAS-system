@@ -10,7 +10,8 @@ import {
     Building2,
     ClipboardList,
     FilePlus,
-    Calendar
+    Calendar,
+    Target
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getPendingOAFsCount, getPendingReviewOAFsCount } from '../../lib/auditService';
@@ -135,6 +136,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         icon={<Building2 size={22} />}
                         label="My Department"
                         badge={pendingOAFCount}
+                    />
+                )}
+                {(userData?.role === 'Auditee') && (
+                    <SidebarItem
+                        to={`/department/${userData?.department || 'General'}/otp`}
+                        icon={<Target size={22} />}
+                        label="Department OTP"
                     />
                 )}
                 {(userData?.role === 'Auditee') && (
