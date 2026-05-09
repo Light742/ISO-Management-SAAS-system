@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2 } from 'lucide-react';
-import { getOTPKPIsByDepartment } from '../../lib/otpService';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { getOTPKPIsByDepartment, deleteOTPKPI } from '../../lib/otpService';
 import type { OTPKPI } from '../../lib/types';
 import { OTPCreationModal } from './OTPCreationModal';
 import { OTPMonthlyUpdateModal } from './OTPMonthlyUpdateModal';
@@ -32,6 +32,18 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
         }
     };
 
+    const handleDelete = async (id?: string) => {
+        if (!id) return;
+        if (window.confirm("Are you sure you want to delete this KPI?")) {
+            try {
+                await deleteOTPKPI(id);
+                loadData();
+            } catch (error) {
+                console.error("Failed to delete KPI", error);
+            }
+        }
+    };
+
     useEffect(() => {
         loadData();
     }, [department, year]);
@@ -60,27 +72,26 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
                     <table className="w-full text-sm text-left whitespace-nowrap min-w-max">
                         <thead className="text-xs text-white uppercase bg-slate-800">
                             <tr>
-                                {canEdit && <th scope="col" className="px-4 py-3 sticky left-0 bg-slate-800 z-20 border-r border-slate-700 w-10"></th>}
-                                <th scope="col" className={`px-4 py-3 sticky ${canEdit ? 'left-10' : 'left-0'} bg-slate-800 z-10 border-r border-slate-700`}>Objectives</th>
-                                <th scope="col" className="px-4 py-3 border-r border-slate-700">Targets</th>
-                                <th scope="col" className="px-4 py-3 border-r border-slate-700">Programs/Actions</th>
-                                <th scope="col" className="px-4 py-3 border-r border-slate-700">Responsible Person</th>
-                                <th scope="col" className="px-4 py-3 border-r border-slate-700">Resources Needed</th>
-                                <th scope="col" className="px-4 py-3 border-r border-slate-700">Timeline</th>
+                                {canEdit && <th rowSpan={2} scope="col" className="px-4 py-3 sticky left-0 bg-slate-800 z-30 border-r border-slate-700 w-16"></th>}
+                                <th rowSpan={2} scope="col" className={`px-4 py-3 sticky ${canEdit ? 'left-16' : 'left-0'} bg-slate-800 z-30 border-r border-slate-700`}>Objectives</th>
+                                <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Targets</th>
+                                <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Programs/Actions</th>
+                                <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Responsible Person</th>
+                                <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Resources Needed</th>
+                                <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Timeline</th>
                                 {monthNames.map((m) => (
-                                    <th key={m} scope="col" className="px-4 py-3 text-center border-r border-slate-700" colSpan={4}>
+                                    <th key={m} scope="col" className="px-4 py-3 text-center border-r border-slate-700 border-b border-slate-600" colSpan={4}>
                                         {m}-{year.toString().slice(-2)}
                                     </th>
                                 ))}
                             </tr>
                             <tr className="bg-slate-700">
-                                <th colSpan={canEdit ? 7 : 6} className={`sticky left-0 bg-slate-700 z-10 border-r border-slate-600`}></th>
                                 {monthNames.map((m) => (
                                     <React.Fragment key={`${m}-sub`}>
-                                        <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium">Target</th>
-                                        <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium">Actual</th>
-                                        <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium">Eval</th>
-                                        <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium">Remarks</th>
+                                        <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium z-10 relative">Target</th>
+                                        <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium z-10 relative">Actual</th>
+                                        <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium z-10 relative">Eval</th>
+                                        <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium z-10 relative">Remarks</th>
                                     </React.Fragment>
                                 ))}
                             </tr>
@@ -95,17 +106,24 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
                             ) : kpis.map((kpi, idx) => (
                                 <tr key={kpi.id || idx} className="bg-white border-b hover:bg-gray-50 group">
                                     {canEdit && (
-                                        <td className="px-2 py-3 sticky left-0 bg-white z-20 border-r group-hover:bg-gray-50 w-10 text-center align-top">
+                                        <td className="px-2 py-3 sticky left-0 bg-white z-20 border-r group-hover:bg-gray-50 w-16 text-center align-top space-x-1">
                                             <button 
                                                 onClick={() => setEditKpiData(kpi)}
-                                                className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors inline-block"
                                                 title="Edit KPI"
                                             >
                                                 <Edit2 size={16} />
                                             </button>
+                                            <button 
+                                                onClick={() => handleDelete(kpi.id)}
+                                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors inline-block"
+                                                title="Delete KPI"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
                                         </td>
                                     )}
-                                    <td className={`px-4 py-3 font-medium text-gray-900 sticky ${canEdit ? 'left-10' : 'left-0'} bg-white z-10 border-r group-hover:bg-gray-50 max-w-[200px] whitespace-normal align-top`}>
+                                    <td className={`px-4 py-3 font-medium text-gray-900 sticky ${canEdit ? 'left-16' : 'left-0'} bg-white z-20 border-r group-hover:bg-gray-50 max-w-[200px] whitespace-normal align-top`}>
                                         {kpi.objective}
                                     </td>
                                     <td className="px-4 py-3 border-r max-w-[200px] whitespace-normal align-top">{kpi.target}</td>

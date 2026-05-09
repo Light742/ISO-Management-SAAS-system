@@ -121,7 +121,7 @@ export const OTPMonthlyReport: React.FC<OTPMonthlyReportProps> = ({ department, 
                     <div className="text-center">
                         <div className="border-b border-black w-full h-12 mb-2"></div>
                         <p className="font-bold text-sm text-slate-800 uppercase">{deptTitle} Supervisor</p>
-                        <p className="text-xs text-slate-500">Prepared By</p>
+                        <p className="text-xs text-slate-500">Reviewed By</p>
                     </div>
                     <div className="text-center">
                         <div className="border-b border-black w-full h-12 mb-2"></div>
