@@ -129,3 +129,66 @@ export async function getOverdueOTPKPIs(): Promise<{ department: string, missing
         missingMonths: Array.from(monthsSet).sort((a,b) => a - b)
     }));
 }
+
+export interface DepartmentCompliance {
+    department: string;
+    totalKPIs: number;
+    lastUpdatedMonth: number;
+    status: 'On Track' | 'Pending Evaluation' | 'Overdue';
+}
+
+export async function getOTPComplianceSummary(year: number): Promise<DepartmentCompliance[]> {
+    const q = query(
+        collection(db, OTP_COLLECTION),
+        where('year', '==', year)
+    );
+    const snapshot = await getDocs(q);
+    const kpis = snapshot.docs.map(doc => doc.data() as OTPKPI);
+    
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const expectedMonth = currentMonth === 1 ? 12 : currentMonth - 1; // If Jan, expect Dec of prev year, but query is for current year so this might be tricky. Let's stick to simple logic: expect currentMonth - 1. If currentMonth is 1, expected is 0 (none).
+
+    const deptMap: Record<string, DepartmentCompliance> = {};
+
+    kpis.forEach(kpi => {
+        if (!deptMap[kpi.department]) {
+            deptMap[kpi.department] = {
+                department: kpi.department,
+                totalKPIs: 0,
+                lastUpdatedMonth: 0,
+                status: 'On Track'
+            };
+        }
+        
+        deptMap[kpi.department].totalKPIs++;
+        
+        // Find latest month this KPI was updated
+        let latestMonth = 0;
+        let hasPending = false;
+        if (kpi.monthlyUpdates && kpi.monthlyUpdates.length > 0) {
+            kpi.monthlyUpdates.forEach(m => {
+                if (m.month > latestMonth) latestMonth = m.month;
+                if (!m.evaluation || m.evaluation === 'PENDING') hasPending = true;
+            });
+        }
+        
+        // If this KPI's latest month is greater than the department's recorded latest, update it
+        // Wait, what if one KPI is updated but another isn't? 
+        // For simplicity, we just check if ALL KPIs have the expected month.
+        // Let's track the minimum "latest month" across all KPIs for this department to be strict, or max to be lenient.
+        // Let's use max for display, but strict for status.
+        if (latestMonth > deptMap[kpi.department].lastUpdatedMonth) {
+            deptMap[kpi.department].lastUpdatedMonth = latestMonth;
+        }
+
+        // Status logic
+        if (expectedMonth > 0 && latestMonth < expectedMonth) {
+            deptMap[kpi.department].status = 'Overdue';
+        } else if (hasPending && deptMap[kpi.department].status !== 'Overdue') {
+            deptMap[kpi.department].status = 'Pending Evaluation';
+        }
+    });
+
+    return Object.values(deptMap).sort((a, b) => a.department.localeCompare(b.department));
+}

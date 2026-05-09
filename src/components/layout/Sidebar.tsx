@@ -11,7 +11,8 @@ import {
     ClipboardList,
     FilePlus,
     Calendar,
-    Target
+    Target,
+    Activity
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getPendingOAFsCount, getPendingReviewOAFsCount } from '../../lib/auditService';
@@ -158,6 +159,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         to="/events"
                         icon={<Calendar size={22} />}
                         label="Event Management"
+                    />
+                )}
+                {(userData?.role === 'LeadAuditor' || userData?.role === 'QMSAdmin') && (
+                    <SidebarItem
+                        to="/otp-monitoring"
+                        icon={<Activity size={22} />}
+                        label="OTP Monitoring"
                     />
                 )}
                 {(userData?.role === 'LeadAuditor' || userData?.role === 'QMSAdmin') && (

@@ -15,6 +15,7 @@ import { OAFDirectoryPage } from './pages/OAFDirectoryPage';
 import { EventManagementPage } from './pages/EventManagementPage';
 import { ArchiveDetailPage } from './pages/ArchiveDetailPage';
 import { OTPPage } from './pages/OTPPage';
+import { OTPMonitoringPage } from './pages/OTPMonitoringPage';
 
 import type { UserRole } from './lib/types';
 
@@ -130,6 +131,12 @@ function App() {
           <Route path="/department/:departmentName/otp" element={
             <ProtectedRoute allowedRoles={['Auditor', 'LeadAuditor', 'QMSAdmin', 'Auditee']}>
               <OTPPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/otp-monitoring" element={
+            <ProtectedRoute allowedRoles={['LeadAuditor', 'QMSAdmin']}>
+              <OTPMonitoringPage />
             </ProtectedRoute>
           } />
 

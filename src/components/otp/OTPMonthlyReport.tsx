@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Printer } from 'lucide-react';
 import { getOTPKPIsByDepartment } from '../../lib/otpService';
-import type { OTPKPI } from '../../lib/types';
+import { getCompanySettings } from '../../lib/settingsService';
+import type { OTPKPI, CompanySettings } from '../../lib/types';
 
 interface OTPMonthlyReportProps {
     department: string;
@@ -14,12 +15,17 @@ export const OTPMonthlyReport: React.FC<OTPMonthlyReportProps> = ({ department, 
     const [kpis, setKpis] = useState<OTPKPI[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+    const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
 
     const loadData = async () => {
         setLoading(true);
         try {
-            const data = await getOTPKPIsByDepartment(department, year);
-            setKpis(data);
+            const [kpiData, settings] = await Promise.all([
+                getOTPKPIsByDepartment(department, year),
+                getCompanySettings()
+            ]);
+            setKpis(kpiData);
+            setCompanySettings(settings);
         } catch (error) {
             console.error("Failed to load OTP KPIs", error);
         } finally {
@@ -67,10 +73,21 @@ export const OTPMonthlyReport: React.FC<OTPMonthlyReportProps> = ({ department, 
 
             {/* Printable Area Container */}
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 print:shadow-none print:border-none print:p-0">
-                <div className="text-center mb-8 border-b-2 border-slate-800 pb-4">
-                    <h2 className="text-2xl font-bold uppercase tracking-wider text-slate-800 mb-1">{department}</h2>
-                    <h3 className="text-xl font-semibold text-slate-600">Objectives, Targets, and Programs (OTP) Report</h3>
-                    <p className="text-lg text-slate-500 mt-2 font-medium">For the Month of {monthNames[selectedMonth - 1]} {year}</p>
+                {/* Report Header */}
+                <div className="flex justify-between items-center mb-8 border-b-2 border-slate-800 pb-6">
+                    <div className="flex items-center gap-4">
+                        {companySettings?.logoUrl && (
+                            <img src={companySettings.logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
+                        )}
+                        <div className="text-left">
+                            <h2 className="text-2xl font-bold uppercase tracking-wider text-slate-800 mb-0">{department}</h2>
+                            <h3 className="text-lg font-semibold text-slate-600">Objectives, Targets, and Programs (OTP)</h3>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-xl font-bold text-slate-800 uppercase tracking-tight">Monthly Report</p>
+                        <p className="text-lg text-slate-500 font-medium">{monthNames[selectedMonth - 1]} {year}</p>
+                    </div>
                 </div>
 
                 <table className="w-full text-sm text-left border-collapse mb-16">
@@ -132,6 +149,14 @@ export const OTPMonthlyReport: React.FC<OTPMonthlyReportProps> = ({ department, 
                         <div className="border-b border-black w-full h-12 mb-2"></div>
                         <p className="font-bold text-sm text-slate-800 uppercase">{deptTitle} Manager</p>
                         <p className="text-xs text-slate-500">Approved By</p>
+                    </div>
+                </div>
+
+                {/* Report Footer */}
+                <div className="mt-16 flex justify-between items-end border-t border-gray-100 pt-8">
+                    <div className="text-xs text-gray-400">
+                        <p>Generated on {new Date().toLocaleDateString()}</p>
+                        <p>© {companySettings?.companyName || 'ISO Management System'}</p>
                     </div>
                 </div>
             </div>

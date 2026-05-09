@@ -73,8 +73,8 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
                         <thead className="text-xs text-white uppercase bg-slate-800">
                             <tr>
                                 {canEdit && <th rowSpan={2} scope="col" className="px-4 py-3 sticky left-0 bg-slate-800 z-30 border-r border-slate-700 w-16"></th>}
-                                <th rowSpan={2} scope="col" className={`px-4 py-3 sticky ${canEdit ? 'left-16' : 'left-0'} bg-slate-800 z-30 border-r border-slate-700`}>Objectives</th>
-                                <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Targets</th>
+                                <th rowSpan={2} scope="col" className={`px-4 py-3 sticky ${canEdit ? 'left-16' : 'left-0'} bg-slate-800 z-30 border-r border-slate-700 w-48`}>Objectives</th>
+                                <th rowSpan={2} scope="col" className={`px-4 py-3 sticky ${canEdit ? 'left-64' : 'left-48'} bg-slate-800 z-30 border-r border-slate-700 w-48`}>Targets</th>
                                 <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Programs/Actions</th>
                                 <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Responsible Person</th>
                                 <th rowSpan={2} scope="col" className="px-4 py-3 border-r border-slate-700">Resources Needed</th>
@@ -123,10 +123,12 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
                                             </button>
                                         </td>
                                     )}
-                                    <td className={`px-4 py-3 font-medium text-gray-900 sticky ${canEdit ? 'left-16' : 'left-0'} bg-white z-20 border-r group-hover:bg-gray-50 max-w-[200px] whitespace-normal align-top`}>
+                                    <td className={`px-4 py-3 font-medium text-gray-900 sticky ${canEdit ? 'left-16' : 'left-0'} bg-white z-20 border-r group-hover:bg-gray-50 w-48 whitespace-normal align-top`}>
                                         {kpi.objective}
                                     </td>
-                                    <td className="px-4 py-3 border-r max-w-[200px] whitespace-normal align-top">{kpi.target}</td>
+                                    <td className={`px-4 py-3 sticky ${canEdit ? 'left-64' : 'left-48'} bg-white z-20 border-r group-hover:bg-gray-50 w-48 whitespace-normal align-top`}>
+                                        {kpi.target}
+                                    </td>
                                     <td className="px-4 py-3 border-r max-w-[250px] whitespace-normal text-xs align-top">{kpi.programsActions}</td>
                                     <td className="px-4 py-3 border-r align-top">{kpi.responsiblePerson}</td>
                                     <td className="px-4 py-3 border-r max-w-[150px] whitespace-normal text-xs align-top">{kpi.resourcesNeeded}</td>
