@@ -247,3 +247,28 @@ export interface SIRForm {
     eventId?: string;            // Associates SIR with audit event
     eventName?: string;          // Denormalized for display
 }
+
+// OTP Monthly Update item
+export interface OTPMonthlyUpdate {
+    month: number; // 1-12
+    target: string;
+    actual: string;
+    evaluation: 'PASSED' | 'FAILED' | 'PENDING' | 'N/A';
+    remarks: string;
+}
+
+// OTP KPI Document
+export interface OTPKPI {
+    id?: string;
+    department: string;
+    objective: string;
+    target: string;
+    programsActions: string;
+    responsiblePerson: string;
+    resourcesNeeded: string;
+    timeline: string;
+    year: number;
+    monthlyUpdates: OTPMonthlyUpdate[];
+    created_at: Timestamp;
+    updated_at: Timestamp;
+}

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getApprovedReportsByDepartment, getOAFsByDepartment } from '../lib/auditService';
 import type { AuditReport, ObservationForm } from '../lib/types';
-import { FileText, Calendar, ChevronRight, Search, Building2, AlertCircle, CheckCircle } from 'lucide-react';
-
+import { FileText, Calendar, ChevronRight, Search, Building2, AlertCircle, CheckCircle, Target } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { OTPTable } from '../components/otp/OTPTable';
 export const DepartmentPage: React.FC = () => {
     const { departmentName } = useParams<{ departmentName: string }>();
     const [reports, setReports] = useState<AuditReport[]>([]);
@@ -11,7 +12,11 @@ export const DepartmentPage: React.FC = () => {
     const [pendingApprovals, setPendingApprovals] = useState<(AuditReport | ObservationForm)[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const navigate = useNavigate();
+    const { userData } = useAuth();
+    
+    const canEditOTP = userData?.role === 'QMSAdmin' || (userData?.role === 'Auditee' && userData?.department === departmentName);
 
     useEffect(() => {
         if (departmentName) {
@@ -136,6 +141,40 @@ export const DepartmentPage: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* OTP KPI Section */}
+            <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-soft">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div className="flex items-center gap-3 text-indigo-900">
+                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+                            <Target size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold">Department KPIs (OTP)</h2>
+                            <p className="text-sm text-gray-500">Objectives, Targets, and Programs monitoring</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-gray-600">Year:</label>
+                        <select
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                            className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 font-medium"
+                        >
+                            {[...Array(5)].map((_, i) => {
+                                const year = new Date().getFullYear() - 2 + i;
+                                return <option key={year} value={year}>{year}</option>;
+                            })}
+                        </select>
+                    </div>
+                </div>
+                
+                <OTPTable 
+                    department={departmentName} 
+                    year={selectedYear} 
+                    canEdit={canEditOTP} 
+                />
+            </div>
 
             {/* Approved Reports Content */}
             {loading ? (

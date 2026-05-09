@@ -25,6 +25,7 @@ import { StatCard } from '../components/dashboard/StatCard';
 import { useAuth } from '../contexts/AuthContext';
 import { getAllAuditReports, getAllObservationForms } from '../lib/auditService';
 import { getActiveEvent, getReportsByEventId, getOAFsByEventId, getOpenCorrectiveActions } from '../lib/auditEventService';
+import { getOverdueOTPKPIs } from '../lib/otpService';
 import type { AuditReport, ObservationForm, AuditEvent } from '../lib/types';
 
 export const DashboardPage = () => {
@@ -34,6 +35,7 @@ export const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [activeEvent, setActiveEvent] = useState<AuditEvent | null>(null);
     const [openCorrectiveActions, setOpenCorrectiveActions] = useState<{ oafs: number; sirs: number }>({ oafs: 0, sirs: 0 });
+    const [overdueOTPs, setOverdueOTPs] = useState<{ department: string, missingMonths: number[] }[]>([]);
 
     useEffect(() => {
         loadData();
@@ -52,6 +54,11 @@ export const DashboardPage = () => {
                 oafs: openActions.oafs.length,
                 sirs: openActions.sirs.length
             });
+
+            if (userData?.role === 'QMSAdmin' || userData?.role === 'LeadAuditor') {
+                const overdue = await getOverdueOTPKPIs();
+                setOverdueOTPs(overdue);
+            }
 
             // If there's an active event, filter by it; otherwise show all
             if (event && event.id) {
@@ -142,6 +149,17 @@ export const DashboardPage = () => {
         if (diffHours < 24) return `${diffHours} hours ago`;
         return `${diffDays} days ago`;
     };
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const overdueActivities = overdueOTPs.map((overdue, idx) => ({
+        id: `overdue-otp-${idx}`,
+        type: 'alert',
+        message: `${overdue.department} has not updated OTP KPIs for: ${overdue.missingMonths.map(m => monthNames[m-1]).join(', ')}`,
+        time: null,
+        status: 'Overdue'
+    }));
+
+    const allActivities = [...overdueActivities, ...activities];
 
     if (loading) {
         return (
@@ -302,20 +320,20 @@ export const DashboardPage = () => {
                             </h2>
                         </div>
                         <div className="p-6 flex-1 overflow-auto max-h-[600px] space-y-6">
-                            {activities.length > 0 ? activities.map((activity, idx) => (
+                            {allActivities.length > 0 ? allActivities.map((activity, idx) => (
                                 <div key={`${activity.id}-${idx}`} className="flex gap-4 items-start group">
                                     <div className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center shrink-0 
-                                        ${activity.type === 'report' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
-                                        {activity.type === 'report' ? <Check size={16} /> : <ClipboardList size={16} />}
+                                        ${activity.type === 'report' ? 'bg-green-100 text-green-600' : activity.type === 'alert' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                                        {activity.type === 'report' ? <Check size={16} /> : activity.type === 'alert' ? <AlertCircle size={16} /> : <ClipboardList size={16} />}
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-sm font-medium text-gray-900 leading-snug">
                                             {activity.message}
                                         </p>
                                         <div className="flex items-center gap-2 mt-1.5">
-                                            <span className="text-xs text-muted-foreground">{formatTime(activity.time)}</span>
-                                            <span className="w-1 h-1 rounded-full bg-gray-300" />
-                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${activity.status === 'Closed' || activity.status === 'Issued' ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'
+                                            {activity.time && <span className="text-xs text-muted-foreground">{formatTime(activity.time)}</span>}
+                                            {activity.time && <span className="w-1 h-1 rounded-full bg-gray-300" />}
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${activity.status === 'Closed' || activity.status === 'Issued' ? 'bg-green-50 text-green-600' : activity.status === 'Overdue' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'
                                                 }`}>
                                                 {activity.status}
                                             </span>
