@@ -8,7 +8,6 @@ import {
     getDocs,
     query,
     where,
-    orderBy,
     Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -34,11 +33,15 @@ export async function getOTPKPIsByDepartment(department: string, year: number): 
     const q = query(
         collection(db, OTP_COLLECTION),
         where('department', '==', department),
-        where('year', '==', year),
-        orderBy('created_at', 'desc')
+        where('year', '==', year)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as OTPKPI));
+    const kpis = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as OTPKPI));
+    return kpis.sort((a, b) => {
+        const timeA = a.created_at?.seconds || 0;
+        const timeB = b.created_at?.seconds || 0;
+        return timeB - timeA;
+    });
 }
 
 export async function getAllOTPKPIs(): Promise<OTPKPI[]> {
