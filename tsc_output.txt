@@ -1,0 +1,6 @@
+src/pages/AuditFormPage.tsx(242,25): error TS2322: Type 'CompanySettings | undefined' is not assignable to type 'CompanySettings | null'.
+  Type 'undefined' is not assignable to type 'CompanySettings | null'.
+src/pages/DashboardPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/DashboardPage.tsx(19,5): error TS6133: 'X' is declared but its value is never read.
+src/pages/DirectoryPage.tsx(17,11): error TS6133: 'userData' is declared but its value is never read.
+src/pages/ObservationActionPage.tsx(62,11): error TS6133: 'canSubmitToAuditeeForApproval' is declared but its value is never read.

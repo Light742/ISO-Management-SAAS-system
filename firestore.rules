@@ -1,0 +1,51 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+    
+    // Audit Reports collection
+    match /audit_reports/{reportId} {
+      allow read, write: if true;
+    }
+    
+    // ISO News collection
+    match /iso_news/{newsId} {
+      allow read, write: if true;
+    }
+    
+    // Departments collection
+    match /departments/{deptId} {
+      allow read, write: if true;
+    }
+
+    // System Settings collection
+    match /system_settings/{settingId} {
+      allow read, write: if true;
+    }
+
+    // Observation Action Forms collection
+    match /observation_forms/{formId} {
+      allow read, write: if true;
+    }
+
+    // System Improvement Request Forms collection
+    match /sir_forms/{formId} {
+      allow read, write: if true;
+    }
+
+    // Audit Events collection
+    match /audit_events/{eventId} {
+      allow read, write: if true;
+    }
+  }
+}
