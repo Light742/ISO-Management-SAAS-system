@@ -17,6 +17,7 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
     const [kpis, setKpis] = useState<OTPKPI[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [editKpiData, setEditKpiData] = useState<OTPKPI | null>(null);
     const [updateModalData, setUpdateModalData] = useState<{ kpi: OTPKPI, monthIndex: number } | null>(null);
 
     const loadData = async () => {
@@ -59,7 +60,8 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
                     <table className="w-full text-sm text-left whitespace-nowrap min-w-max">
                         <thead className="text-xs text-white uppercase bg-slate-800">
                             <tr>
-                                <th scope="col" className="px-4 py-3 sticky left-0 bg-slate-800 z-10 border-r border-slate-700">Objectives</th>
+                                {canEdit && <th scope="col" className="px-4 py-3 sticky left-0 bg-slate-800 z-20 border-r border-slate-700 w-10"></th>}
+                                <th scope="col" className={`px-4 py-3 sticky ${canEdit ? 'left-10' : 'left-0'} bg-slate-800 z-10 border-r border-slate-700`}>Objectives</th>
                                 <th scope="col" className="px-4 py-3 border-r border-slate-700">Targets</th>
                                 <th scope="col" className="px-4 py-3 border-r border-slate-700">Programs/Actions</th>
                                 <th scope="col" className="px-4 py-3 border-r border-slate-700">Responsible Person</th>
@@ -72,7 +74,7 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
                                 ))}
                             </tr>
                             <tr className="bg-slate-700">
-                                <th colSpan={6} className="sticky left-0 bg-slate-700 z-10 border-r border-slate-600"></th>
+                                <th colSpan={canEdit ? 7 : 6} className={`sticky left-0 bg-slate-700 z-10 border-r border-slate-600`}></th>
                                 {monthNames.map((m) => (
                                     <React.Fragment key={`${m}-sub`}>
                                         <th className="px-2 py-2 text-center text-[10px] border-r border-slate-600 font-medium">Target</th>
@@ -86,20 +88,31 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
                         <tbody>
                             {kpis.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6 + (12 * 4)} className="px-6 py-8 text-center text-gray-500 bg-gray-50">
+                                    <td colSpan={canEdit ? 7 + (12 * 4) : 6 + (12 * 4)} className="px-6 py-8 text-center text-gray-500 bg-gray-50">
                                         No KPIs found for {year}.
                                     </td>
                                 </tr>
                             ) : kpis.map((kpi, idx) => (
-                                <tr key={kpi.id || idx} className="bg-white border-b hover:bg-gray-50">
-                                    <td className="px-4 py-3 font-medium text-gray-900 sticky left-0 bg-white z-10 border-r group-hover:bg-gray-50 max-w-[200px] whitespace-normal">
+                                <tr key={kpi.id || idx} className="bg-white border-b hover:bg-gray-50 group">
+                                    {canEdit && (
+                                        <td className="px-2 py-3 sticky left-0 bg-white z-20 border-r group-hover:bg-gray-50 w-10 text-center align-top">
+                                            <button 
+                                                onClick={() => setEditKpiData(kpi)}
+                                                className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                title="Edit KPI"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                        </td>
+                                    )}
+                                    <td className={`px-4 py-3 font-medium text-gray-900 sticky ${canEdit ? 'left-10' : 'left-0'} bg-white z-10 border-r group-hover:bg-gray-50 max-w-[200px] whitespace-normal align-top`}>
                                         {kpi.objective}
                                     </td>
-                                    <td className="px-4 py-3 border-r max-w-[200px] whitespace-normal">{kpi.target}</td>
-                                    <td className="px-4 py-3 border-r max-w-[250px] whitespace-normal text-xs">{kpi.programsActions}</td>
-                                    <td className="px-4 py-3 border-r">{kpi.responsiblePerson}</td>
-                                    <td className="px-4 py-3 border-r max-w-[150px] whitespace-normal text-xs">{kpi.resourcesNeeded}</td>
-                                    <td className="px-4 py-3 border-r">{kpi.timeline}</td>
+                                    <td className="px-4 py-3 border-r max-w-[200px] whitespace-normal align-top">{kpi.target}</td>
+                                    <td className="px-4 py-3 border-r max-w-[250px] whitespace-normal text-xs align-top">{kpi.programsActions}</td>
+                                    <td className="px-4 py-3 border-r align-top">{kpi.responsiblePerson}</td>
+                                    <td className="px-4 py-3 border-r max-w-[150px] whitespace-normal text-xs align-top">{kpi.resourcesNeeded}</td>
+                                    <td className="px-4 py-3 border-r align-top">{kpi.timeline}</td>
                                     
                                     {/* Month cells */}
                                     {Array.from({ length: 12 }).map((_, mIdx) => {
@@ -142,11 +155,15 @@ export const OTPTable: React.FC<OTPTableProps> = ({ department, year, canEdit })
                 </div>
             </div>
 
-            {isCreateModalOpen && (
+            {(isCreateModalOpen || editKpiData) && (
                 <OTPCreationModal 
                     department={department}
                     year={year}
-                    onClose={() => setIsCreateModalOpen(false)}
+                    existingKpi={editKpiData || undefined}
+                    onClose={() => {
+                        setIsCreateModalOpen(false);
+                        setEditKpiData(null);
+                    }}
                     onCreated={loadData}
                 />
             )}

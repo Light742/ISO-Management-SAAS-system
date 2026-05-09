@@ -9,11 +9,13 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
 
     return (
         <div className="flex bg-background min-h-screen">
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <div className="print:hidden">
+                <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            </div>
 
             <main className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
                 {/* Header */}
-                <header className="px-4 md:px-10 py-4 md:py-6 flex items-center justify-between bg-transparent flex-shrink-0 z-30">
+                <header className="px-4 md:px-10 py-4 md:py-6 flex items-center justify-between bg-transparent flex-shrink-0 z-30 print:hidden">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         {/* Mobile Menu Toggle */}
                         <button
@@ -50,8 +52,8 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
                 </header>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto px-4 md:px-10 pb-20 md:pb-10 w-full">
-                    <div className="max-w-7xl mx-auto h-full">
+                <div className="flex-1 overflow-y-auto px-4 md:px-10 pb-20 md:pb-10 w-full print:p-0 print:overflow-visible">
+                    <div className="max-w-7xl mx-auto h-full print:max-w-none">
                         {children}
                     </div>
                 </div>

@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { createOTPKPI } from '../../lib/otpService';
+import { createOTPKPI, updateOTPKPI } from '../../lib/otpService';
+import type { OTPKPI } from '../../lib/types';
 
 interface OTPCreationModalProps {
     department: string;
     year: number;
     onClose: () => void;
     onCreated: () => void;
+    existingKpi?: OTPKPI;
 }
 
-export const OTPCreationModal: React.FC<OTPCreationModalProps> = ({ department, year, onClose, onCreated }) => {
-    const [objective, setObjective] = useState('');
-    const [target, setTarget] = useState('');
-    const [programsActions, setProgramsActions] = useState('');
-    const [responsiblePerson, setResponsiblePerson] = useState('');
-    const [resourcesNeeded, setResourcesNeeded] = useState('');
-    const [timeline, setTimeline] = useState('');
+export const OTPCreationModal: React.FC<OTPCreationModalProps> = ({ department, year, onClose, onCreated, existingKpi }) => {
+    const [objective, setObjective] = useState(existingKpi?.objective || '');
+    const [target, setTarget] = useState(existingKpi?.target || '');
+    const [programsActions, setProgramsActions] = useState(existingKpi?.programsActions || '');
+    const [responsiblePerson, setResponsiblePerson] = useState(existingKpi?.responsiblePerson || '');
+    const [resourcesNeeded, setResourcesNeeded] = useState(existingKpi?.resourcesNeeded || '');
+    const [timeline, setTimeline] = useState(existingKpi?.timeline || '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,21 +26,32 @@ export const OTPCreationModal: React.FC<OTPCreationModalProps> = ({ department, 
         setLoading(true);
         setError(null);
         try {
-            await createOTPKPI({
-                department,
-                year,
-                objective,
-                target,
-                programsActions,
-                responsiblePerson,
-                resourcesNeeded,
-                timeline,
-                monthlyUpdates: []
-            });
+            if (existingKpi?.id) {
+                await updateOTPKPI(existingKpi.id, {
+                    objective,
+                    target,
+                    programsActions,
+                    responsiblePerson,
+                    resourcesNeeded,
+                    timeline
+                });
+            } else {
+                await createOTPKPI({
+                    department,
+                    year,
+                    objective,
+                    target,
+                    programsActions,
+                    responsiblePerson,
+                    resourcesNeeded,
+                    timeline,
+                    monthlyUpdates: []
+                });
+            }
             onCreated();
             onClose();
         } catch (err: any) {
-            setError(err.message || 'Failed to create OTP KPI');
+            setError(err.message || `Failed to ${existingKpi ? 'update' : 'create'} OTP KPI`);
         } finally {
             setLoading(false);
         }
@@ -48,7 +61,7 @@ export const OTPCreationModal: React.FC<OTPCreationModalProps> = ({ department, 
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                    <h2 className="text-2xl font-bold text-gray-900">Add New Objective ({year})</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">{existingKpi ? 'Edit' : 'Add New'} Objective ({year})</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <X size={20} className="text-gray-500" />
                     </button>
@@ -149,7 +162,7 @@ export const OTPCreationModal: React.FC<OTPCreationModalProps> = ({ department, 
                             disabled={loading}
                             className="px-5 py-2 text-sm font-medium text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors disabled:opacity-50"
                         >
-                            {loading ? 'Saving...' : 'Save Objective'}
+                            {loading ? 'Saving...' : (existingKpi ? 'Save Changes' : 'Save Objective')}
                         </button>
                     </div>
                 </form>
